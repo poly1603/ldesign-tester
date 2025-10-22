@@ -1,0 +1,15 @@
+{
+  "name": "@ldesign/tester",
+  "version": "0.1.0",
+  "description": "LDesign 测试工具集 - Vitest/Playwright 集成、模板生成",
+  "keywords": ["ldesign", "test", "vitest", "playwright"],
+  "author": "LDesign Team",
+  "license": "MIT",
+  "type": "module",
+  "main": "./lib/index.cjs",
+  "module": "./es/index.js",
+  "scripts": {"build": "ldesign-builder build -f esm,cjs,dts"},
+  "dependencies": {"@ldesign/kit": "workspace:*"},
+  "devDependencies": {"@ldesign/builder": "workspace:*", "typescript": "^5.7.3", "vitest": "^2.0.0", "@playwright/test": "^1.40.1"}
+}
+
