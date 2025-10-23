@@ -1,0 +1,58 @@
+name: Test
+
+on:
+push:
+branches: [<%= branches.join(', ') %>]
+  pull_request:
+    branches: [<%= branches.join(' , ') %>]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [<%= nodeVersions.join(' , ') %>]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+<% if (cache) { %>
+          cache: ' <%=packageManager %>'
+  <% } %>
+
+    - name: Install dependencies
+    run: <%= installCommand %>
+
+      - name: Run linter
+      run: <%= lintCommand %>
+
+        - name: Run tests
+        run: <%= testCommand %>
+
+          - name: Run tests with coverage
+          run: <%= coverageCommand %>
+            <% if (uploadCoverage) { %>
+
+              - name: Upload coverage to Codecov
+              uses: codecov/codecov-action@v3
+              with:
+              file: ./coverage/coverage-final.json
+              flags: unittests
+              name: codecov-${{ matrix.node-version }}
+              <% } %>
+
+                - name: Archive test results
+                uses: actions/upload-artifact@v3
+                if: always()
+                with:
+                name: test-results-${{ matrix.node-version }}
+                path: |
+                coverage/
+                test-results/
+

@@ -1,0 +1,66 @@
+pipeline {
+agent any
+
+tools {
+nodejs 'NodeJS <%= nodeVersions[0] %>'
+  }
+
+  stages {
+  stage('Checkout') {
+  steps {
+  checkout scm
+  }
+  }
+
+  stage('Install Dependencies') {
+  steps {
+  sh '<%= installCommand %>'
+    }
+    }
+
+    stage('Lint') {
+    steps {
+    sh '<%= lintCommand %>'
+      }
+      }
+
+      stage('Test') {
+      steps {
+      sh '<%= testCommand %>'
+        }
+        post {
+        always {
+        junit 'test-results/**/*.xml'
+        }
+        }
+        }
+
+        stage('Coverage') {
+        steps {
+        sh '<%= coverageCommand %>'
+          }
+          post {
+          always {
+          publishHTML([
+          reportDir: 'coverage',
+          reportFiles: 'index.html',
+          reportName: 'Coverage Report'
+          ])
+          }
+          }
+          }
+          }
+
+          post {
+          always {
+          cleanWs()
+          }
+          success {
+          echo 'Tests passed!'
+          }
+          failure {
+          echo 'Tests failed!'
+          }
+          }
+          }
+

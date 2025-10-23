@@ -1,0 +1,66 @@
+image: node:<%= nodeVersions[0] %>
+
+  stages:
+  - install
+  - lint
+  - test
+  - coverage
+
+  <% if (cache) { %>
+    cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+    - node_modules/
+    - .pnpm-store/
+    <% } %>
+
+      install:
+      stage: install
+      script:
+      - <%= installCommand %>
+        artifacts:
+        paths:
+        - node_modules/
+        expire_in: 1 hour
+
+        lint:
+        stage: lint
+        dependencies:
+        - install
+        script:
+        - <%= lintCommand %>
+
+          test:
+          stage: test
+          dependencies:
+          - install
+          parallel:
+          matrix:
+          - NODE_VERSION: [<%= nodeVersions.map(v=> `"${v}"`).join(', ') %>]
+            image: node:${NODE_VERSION}
+            script:
+            - <%= testCommand %>
+              artifacts:
+              when: always
+              paths:
+              - test-results/
+              reports:
+              junit: test-results/junit.xml
+
+              coverage:
+              stage: coverage
+              dependencies:
+              - install
+              script:
+              - <%= coverageCommand %>
+                <% if (uploadCoverage) { %>
+                  - bash <(curl -s https://codecov.io/bash) <% } %>
+                    coverage: '/Lines\s*:\s*(\d+\.\d+)%/'
+                    artifacts:
+                    paths:
+                    - coverage/
+                    reports:
+                    coverage_report:
+                    coverage_format: cobertura
+                    path: coverage/cobertura-coverage.xml
+

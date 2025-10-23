@@ -1,17 +1,59 @@
 {
   "name": "@ldesign/tester",
-  "version": "0.1.0",
-  "description": "LDesign 测试工具集 - Vitest/Playwright 集成、模板生成",
-  "keywords": ["ldesign", "test", "vitest", "playwright"],
+  "version": "1.0.0",
+  "description": "LDesign 测试工具集 - Vitest/Playwright 集成、模板生成、Mock系统、覆盖率报告、Dashboard、CI/CD集成",
+  "keywords": ["ldesign", "test", "vitest", "playwright", "mock", "coverage", "ci-cd", "testing"],
   "author": "LDesign Team",
   "license": "MIT",
   "type": "module",
   "main": "./lib/index.cjs",
   "module": "./es/index.js",
-  "scripts": {"build": "ldesign-builder build -f esm,cjs,dts"},
-  "dependencies": {"@ldesign/kit": "workspace:*"},
-  "devDependencies": {"@ldesign/builder": "workspace:*", "typescript": "^5.7.3", "vitest": "^2.0.0", "@playwright/test": "^1.40.1"}
+  "types": "./es/index.d.ts",
+  "bin": {
+    "ldesign-test": "./bin/cli.js"
+  },
+  "scripts": {
+    "build": "ldesign-builder build -f esm,cjs,dts",
+    "dev": "ldesign-builder build -f esm,cjs,dts --watch",
+    "test": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint . --fix"
+  },
+  "dependencies": {
+    "@ldesign/kit": "workspace:*",
+    "@faker-js/faker": "^8.4.0",
+    "msw": "^2.0.0",
+    "tinybench": "^2.6.0",
+    "autocannon": "^7.15.0",
+    "lighthouse": "^11.5.0",
+    "web-vitals": "^3.5.0",
+    "@percy/playwright": "^1.0.0",
+    "pixelmatch": "^5.3.0",
+    "pngjs": "^7.0.0",
+    "express": "^4.18.2",
+    "chart.js": "^4.4.0",
+    "better-sqlite3": "^9.3.0",
+    "ejs": "^3.1.9",
+    "commander": "^11.1.0"
+  },
+  "devDependencies": {
+    "@ldesign/builder": "workspace:*",
+    "typescript": "^5.7.3",
+    "vitest": "^2.0.0",
+    "@playwright/test": "^1.40.1",
+    "@testing-library/vue": "^8.0.0",
+    "@testing-library/react": "^14.1.0",
+    "@vitest/ui": "^2.0.0",
+    "@vitest/coverage-v8": "^2.0.0",
+    "supertest": "^6.3.3",
+    "@types/express": "^4.17.21",
+    "@types/better-sqlite3": "^7.6.8",
+    "@types/ejs": "^3.1.5"
+  }
 }
+
+
+
 
 
 

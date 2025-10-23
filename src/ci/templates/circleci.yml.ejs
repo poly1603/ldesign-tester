@@ -1,0 +1,62 @@
+version: 2.1
+
+orbs:
+node: circleci/node@5.1.0
+
+jobs:
+test:
+docker:
+- image: cimg/node:<%= nodeVersions[0] %>
+
+  steps:
+  - checkout
+
+  - restore_cache:
+  keys:
+  - v1-dependencies-{{ checksum "package.json" }}
+  - v1-dependencies-
+
+  - run:
+  name: Install Dependencies
+  command: <%= installCommand %>
+
+    - save_cache:
+    paths:
+    - node_modules
+    key: v1-dependencies-{{ checksum "package.json" }}
+
+    - run:
+    name: Run Linter
+    command: <%= lintCommand %>
+
+      - run:
+      name: Run Tests
+      command: <%= testCommand %>
+
+        - run:
+        name: Generate Coverage
+        command: <%= coverageCommand %>
+          <% if (uploadCoverage) { %>
+
+            - run:
+            name: Upload Coverage
+            command: bash <(curl -s https://codecov.io/bash) <% } %>
+
+              - store_test_results:
+              path: test-results
+
+              - store_artifacts:
+              path: coverage
+              destination: coverage
+
+              workflows:
+              version: 2
+              test-workflow:
+              jobs:
+              - test:
+              filters:
+              branches:
+              only:
+              - main
+              - develop
+
