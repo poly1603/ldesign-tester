@@ -1,7 +1,7 @@
 /**
  * Faker 数据生成器 - 使用 Faker.js 生成假数据
  */
-import { faker } from '@faker-js/faker'
+import { faker, zh_CN, en_US, type Faker } from '@faker-js/faker'
 import type { MockOptions } from '../types/index.js'
 
 /**
@@ -58,6 +58,7 @@ export interface MockOrder {
  */
 export class FakerGenerator {
   private locale: 'zh_CN' | 'en_US'
+  private fakerInstance: Faker
 
   /**
    * 创建 Faker 生成器
@@ -65,7 +66,7 @@ export class FakerGenerator {
    */
   constructor(locale: 'zh_CN' | 'en_US' = 'zh_CN') {
     this.locale = locale
-    this.setLocale(locale)
+    this.fakerInstance = locale === 'zh_CN' ? zh_CN : en_US
   }
 
   /**
@@ -74,12 +75,7 @@ export class FakerGenerator {
    */
   setLocale(locale: 'zh_CN' | 'en_US'): void {
     this.locale = locale
-    if (locale === 'zh_CN') {
-      faker.locale = 'zh_CN'
-    }
-    else {
-      faker.locale = 'en_US'
-    }
+    this.fakerInstance = locale === 'zh_CN' ? zh_CN : en_US
   }
 
   /**
@@ -88,21 +84,21 @@ export class FakerGenerator {
    */
   generateUser(): MockUser {
     return {
-      id: faker.string.uuid(),
-      username: faker.internet.userName(),
-      email: faker.internet.email(),
-      firstName: faker.person.firstName(),
-      lastName: faker.person.lastName(),
-      avatar: faker.image.avatar(),
-      phone: faker.phone.number(),
+      id: this.fakerInstance.string.uuid(),
+      username: this.fakerInstance.internet.userName(),
+      email: this.fakerInstance.internet.email(),
+      firstName: this.fakerInstance.person.firstName(),
+      lastName: this.fakerInstance.person.lastName(),
+      avatar: this.fakerInstance.image.avatar(),
+      phone: this.fakerInstance.phone.number(),
       address: {
-        street: faker.location.streetAddress(),
-        city: faker.location.city(),
-        state: faker.location.state(),
-        zipCode: faker.location.zipCode(),
-        country: faker.location.country(),
+        street: this.fakerInstance.location.streetAddress(),
+        city: this.fakerInstance.location.city(),
+        state: this.fakerInstance.location.state(),
+        zipCode: this.fakerInstance.location.zipCode(),
+        country: this.fakerInstance.location.country(),
       },
-      createdAt: faker.date.past(),
+      createdAt: this.fakerInstance.date.past(),
     }
   }
 
@@ -121,15 +117,15 @@ export class FakerGenerator {
    */
   generateProduct(): MockProduct {
     return {
-      id: faker.string.uuid(),
-      name: faker.commerce.productName(),
-      description: faker.commerce.productDescription(),
-      price: Number.parseFloat(faker.commerce.price()),
-      category: faker.commerce.department(),
-      image: faker.image.url(),
-      stock: faker.number.int({ min: 0, max: 1000 }),
-      sku: faker.string.alphanumeric(10).toUpperCase(),
-      createdAt: faker.date.past(),
+      id: this.fakerInstance.string.uuid(),
+      name: this.fakerInstance.commerce.productName(),
+      description: this.fakerInstance.commerce.productDescription(),
+      price: Number.parseFloat(this.fakerInstance.commerce.price()),
+      category: this.fakerInstance.commerce.department(),
+      image: this.fakerInstance.image.url(),
+      stock: this.fakerInstance.number.int({ min: 0, max: 1000 }),
+      sku: this.fakerInstance.string.alphanumeric(10).toUpperCase(),
+      createdAt: this.fakerInstance.date.past(),
     }
   }
 
@@ -147,29 +143,29 @@ export class FakerGenerator {
    * @returns 订单数据
    */
   generateOrder(): MockOrder {
-    const productCount = faker.number.int({ min: 1, max: 5 })
+    const productCount = this.fakerInstance.number.int({ min: 1, max: 5 })
     const products = Array.from({ length: productCount }, () => ({
-      productId: faker.string.uuid(),
-      quantity: faker.number.int({ min: 1, max: 10 }),
-      price: Number.parseFloat(faker.commerce.price()),
+      productId: this.fakerInstance.string.uuid(),
+      quantity: this.fakerInstance.number.int({ min: 1, max: 10 }),
+      price: Number.parseFloat(this.fakerInstance.commerce.price()),
     }))
 
     const totalAmount = products.reduce((sum, p) => sum + p.price * p.quantity, 0)
 
     return {
-      id: faker.string.uuid(),
-      userId: faker.string.uuid(),
+      id: this.fakerInstance.string.uuid(),
+      userId: this.fakerInstance.string.uuid(),
       products,
       totalAmount,
-      status: faker.helpers.arrayElement([
+      status: this.fakerInstance.helpers.arrayElement([
         'pending',
         'processing',
         'shipped',
         'delivered',
         'cancelled',
       ]),
-      createdAt: faker.date.past(),
-      updatedAt: faker.date.recent(),
+      createdAt: this.fakerInstance.date.past(),
+      updatedAt: this.fakerInstance.date.recent(),
     }
   }
 
@@ -216,87 +212,87 @@ export class FakerGenerator {
     switch (type.toLowerCase()) {
       // 基础类型
       case 'string':
-        return faker.lorem.word()
+        return this.fakerInstance.lorem.word()
       case 'number':
-        return faker.number.int({ min: 0, max: 1000 })
+        return this.fakerInstance.number.int({ min: 0, max: 1000 })
       case 'float':
-        return faker.number.float({ min: 0, max: 1000, precision: 0.01 })
+        return this.fakerInstance.number.float({ min: 0, max: 1000, precision: 0.01 })
       case 'boolean':
-        return faker.datatype.boolean()
+        return this.fakerInstance.datatype.boolean()
       case 'date':
-        return faker.date.past()
+        return this.fakerInstance.date.past()
 
       // ID 类型
       case 'id':
       case 'uuid':
-        return faker.string.uuid()
+        return this.fakerInstance.string.uuid()
 
       // 用户相关
       case 'username':
-        return faker.internet.userName()
+        return this.fakerInstance.internet.userName()
       case 'email':
-        return faker.internet.email()
+        return this.fakerInstance.internet.email()
       case 'firstname':
-        return faker.person.firstName()
+        return this.fakerInstance.person.firstName()
       case 'lastname':
-        return faker.person.lastName()
+        return this.fakerInstance.person.lastName()
       case 'fullname':
-        return faker.person.fullName()
+        return this.fakerInstance.person.fullName()
       case 'avatar':
-        return faker.image.avatar()
+        return this.fakerInstance.image.avatar()
       case 'phone':
-        return faker.phone.number()
+        return this.fakerInstance.phone.number()
 
       // 地址相关
       case 'street':
-        return faker.location.streetAddress()
+        return this.fakerInstance.location.streetAddress()
       case 'city':
-        return faker.location.city()
+        return this.fakerInstance.location.city()
       case 'state':
-        return faker.location.state()
+        return this.fakerInstance.location.state()
       case 'zipcode':
-        return faker.location.zipCode()
+        return this.fakerInstance.location.zipCode()
       case 'country':
-        return faker.location.country()
+        return this.fakerInstance.location.country()
 
       // 网络相关
       case 'url':
-        return faker.internet.url()
+        return this.fakerInstance.internet.url()
       case 'domain':
-        return faker.internet.domainName()
+        return this.fakerInstance.internet.domainName()
       case 'ip':
-        return faker.internet.ip()
+        return this.fakerInstance.internet.ip()
 
       // 文本相关
       case 'title':
-        return faker.lorem.sentence()
+        return this.fakerInstance.lorem.sentence()
       case 'description':
-        return faker.lorem.paragraph()
+        return this.fakerInstance.lorem.paragraph()
       case 'text':
-        return faker.lorem.text()
+        return this.fakerInstance.lorem.text()
 
       // 图片相关
       case 'image':
       case 'imageurl':
-        return faker.image.url()
+        return this.fakerInstance.image.url()
 
       // 商务相关
       case 'productname':
-        return faker.commerce.productName()
+        return this.fakerInstance.commerce.productName()
       case 'price':
-        return Number.parseFloat(faker.commerce.price())
+        return Number.parseFloat(this.fakerInstance.commerce.price())
       case 'department':
       case 'category':
-        return faker.commerce.department()
+        return this.fakerInstance.commerce.department()
 
       // 公司相关
       case 'company':
-        return faker.company.name()
+        return this.fakerInstance.company.name()
       case 'jobtitle':
-        return faker.person.jobTitle()
+        return this.fakerInstance.person.jobTitle()
 
       default:
-        return faker.lorem.word()
+        return this.fakerInstance.lorem.word()
     }
   }
 

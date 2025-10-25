@@ -1,9 +1,10 @@
 /**
  * 测试脚手架生成器 - 创建标准测试目录结构
  */
-import * as fs from 'node:fs'
+import { promises as fs } from 'node:fs'
 import * as path from 'node:path'
 import type { ScaffoldOptions } from '../types/index.js'
+import { ScaffoldError } from '../errors/index.js'
 
 /**
  * 测试脚手架生成器类
@@ -71,11 +72,27 @@ export class ScaffoldGenerator {
       path.join(projectRoot, e2eDir, 'fixtures'),
     ]
 
-    for (const dir of directories) {
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true })
-        console.log(`📁 创建目录: ${dir}`)
-      }
+    try {
+      // 并行创建所有目录
+      await Promise.all(
+        directories.map(async (dir) => {
+          try {
+            await fs.mkdir(dir, { recursive: true })
+            console.log(`📁 创建目录: ${dir}`)
+          }
+          catch (err) {
+            // 目录已存在，忽略错误
+            if ((err as NodeJS.ErrnoException).code !== 'EEXIST') {
+              throw err
+            }
+          }
+        }),
+      )
+    }
+    catch (err) {
+      throw new ScaffoldError('目录创建失败', {
+        error: err instanceof Error ? err.message : String(err),
+      })
     }
   }
 
@@ -146,7 +163,7 @@ export function randomNumber(min = 0, max = 100): number {
 }
 `
 
-    fs.writeFileSync(path.join(helpersDir, 'test-utils.ts'), testUtilsContent)
+    await fs.writeFile(path.join(helpersDir, 'test-utils.ts'), testUtilsContent, 'utf-8')
     console.log('📄 创建文件: helpers/test-utils.ts')
 
     // DOM 测试辅助函数
@@ -216,7 +233,7 @@ export async function waitForElement(
 }
 `
 
-    fs.writeFileSync(path.join(helpersDir, 'dom-helpers.ts'), domHelpersContent)
+    await fs.writeFile(path.join(helpersDir, 'dom-helpers.ts'), domHelpersContent, 'utf-8')
     console.log('📄 创建文件: helpers/dom-helpers.ts')
 
     // 导出文件
@@ -228,7 +245,7 @@ export * from './test-utils.js'
 export * from './dom-helpers.js'
 `
 
-    fs.writeFileSync(path.join(helpersDir, 'index.ts'), indexContent)
+    await fs.writeFile(path.join(helpersDir, 'index.ts'), indexContent, 'utf-8')
     console.log('📄 创建文件: helpers/index.ts')
   }
 
@@ -264,7 +281,7 @@ export const usersFixture = [
 ]
 `
 
-    fs.writeFileSync(path.join(fixturesDir, 'users.ts'), userFixture)
+    await fs.writeFile(path.join(fixturesDir, 'users.ts'), userFixture, 'utf-8')
     console.log('📄 创建文件: fixtures/users.ts')
 
     // 导出文件
@@ -275,7 +292,7 @@ export const usersFixture = [
 export * from './users.js'
 `
 
-    fs.writeFileSync(path.join(fixturesDir, 'index.ts'), indexContent)
+    await fs.writeFile(path.join(fixturesDir, 'index.ts'), indexContent, 'utf-8')
     console.log('📄 创建文件: fixtures/index.ts')
   }
 
@@ -309,7 +326,7 @@ export function resetApiMocks(): void {
 }
 `
 
-    fs.writeFileSync(path.join(mocksDir, 'api.ts'), apiMockContent)
+    await fs.writeFile(path.join(mocksDir, 'api.ts'), apiMockContent, 'utf-8')
     console.log('📄 创建文件: mocks/api.ts')
 
     // 导出文件
@@ -320,7 +337,7 @@ export function resetApiMocks(): void {
 export * from './api.js'
 `
 
-    fs.writeFileSync(path.join(mocksDir, 'index.ts'), indexContent)
+    await fs.writeFile(path.join(mocksDir, 'index.ts'), indexContent, 'utf-8')
     console.log('📄 创建文件: mocks/index.ts')
   }
 
@@ -353,7 +370,7 @@ describe('示例测试套件', () => {
 })
 `
 
-    fs.writeFileSync(path.join(unitDir, 'example.test.ts'), exampleTestContent)
+    await fs.writeFile(path.join(unitDir, 'example.test.ts'), exampleTestContent, 'utf-8')
     console.log('📄 创建文件: unit/example.test.ts')
   }
 }
